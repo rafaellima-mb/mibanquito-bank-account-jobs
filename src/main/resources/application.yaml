@@ -1,0 +1,3 @@
+spring:
+  application:
+    name: mibanquito-bank-account-jobs
