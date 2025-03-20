@@ -1,0 +1,25 @@
+datasource:
+  password: postgres
+  username: postgres
+  driverClassName: org.postgresql.Driver
+  url: jdbc:postgresql://localhost:5433/bank_account
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+# BTG
+app:
+  btg:
+    mbex:
+      balanceUrl: https://api-h.developer.btgpactual.com/cm/account
+      accountId: 734f3005-ba37-4ec6-8d53-b7a8da8505a9
+      accountUrl: https://api-h.developer.btgpactual.com/cm/account
+      authUrl: https://api-h.developer.btgpactual.com/cm/authentication/token
+      clientId: 51998e6c-a0c7-41ea-8c88-5509d54e316f
+      clientSecret: 65VBR2M00YFF9N5M7C7ATMP63CZJBNIYZ9STGJRWKLJLXX0Q
+    mbpay:
+      balanceUrl: https://api-h.developer.btgpactual.com/cm/account
+      accountId: 734f3005-ba37-4ec6-8d53-b7a8da8505a9
+      accountUrl: https://api-h.developer.btgpactual.com/cm/account
+      authUrl: https://api-h.developer.btgpactual.com/cm/authentication/token
+      clientId: 51998e6c-a0c7-41ea-8c88-5509d54e316f
+      clientSecret: 65VBR2M00YFF9N5M7C7ATMP63CZJBNIYZ9STGJRWKLJLXX0Q

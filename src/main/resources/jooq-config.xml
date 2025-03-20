@@ -1,0 +1,23 @@
+<configuration xmlns="http://www.jooq.org/xsd/jooq-codegen-3.20.1.xsd">
+    <jdbc>
+        <driver>org.postgresql.Driver</driver>
+        <url>${DB_URL}</url>
+        <user>${DB_USER}</user>
+        <password>${DB_PASSWORD}</password>
+    </jdbc>
+    <generator>
+        <name>org.jooq.codegen.DefaultGenerator</name>
+        <database>
+            <name>org.jooq.meta.postgres.PostgresDatabase</name>
+            <inputSchema>${DB_SCHEMA}</inputSchema>
+        </database>
+        <generate>
+            <daos>true</daos>
+            <pojos>true</pojos>
+        </generate>
+        <target>
+            <packageName>br.com.meubank.mibanquito.jooq</packageName>
+            <directory>src/main/java</directory>
+        </target>
+    </generator>
+</configuration>

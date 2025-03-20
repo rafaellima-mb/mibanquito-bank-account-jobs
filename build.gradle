@@ -1,0 +1,92 @@
+plugins {
+    id 'java'
+    id 'com.github.sherter.google-java-format' version '0.9'
+    id 'com.palantir.git-version' version '0.12.3'
+    id 'org.springframework.boot' version '3.4.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.graalvm.buildtools.native' version '0.10.5'
+}
+group = 'br.com.meubank'
+
+googleJavaFormat {
+    toolVersion = '1.15.0'
+}
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(23)
+    }
+}
+
+graalvmNative {
+    binaries {
+        main {
+            buildArgs.add("--initialize-at-run-time=org.jooq")
+            buildArgs.add("--initialize-at-run-time=org.postgresql.Driver")
+            buildArgs.add("--enable-url-protocols=http,https")
+            javaLauncher.set(javaToolchains.launcherFor {
+                languageVersion.set(JavaLanguageVersion.of(23))
+            })
+        }
+    }
+}
+
+repositories {
+    if (!System.getenv("CI")) {
+        mavenLocal()
+    }
+    maven {
+        url "https://${System.getenv('NEXUS_HOST') ?: 'meubank-nexus.dev.mercadolitecoin.com.br'}/repository/maven-public/"
+        credentials {
+            username System.getenv('NEXUS_USER') ?: "admin"
+            password System.getenv('NEXUS_PWD') ?: "admin123"
+        }
+    }
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-otlp'
+    implementation 'org.springframework.boot:spring-boot-starter-jooq'
+    implementation 'org.jooq:jooq-meta'
+    implementation 'org.jooq:jooq-codegen'
+    implementation "org.jooq:jooq:3.20.1"
+    runtimeOnly 'org.postgresql:postgresql'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.20.0'
+
+    implementation 'br.com.meubank:mibanquito-job-runner:v1.0.0'
+    implementation 'br.com.meubank:mibanquito-btg-client:v0.4.27'
+}
+
+tasks.register('generateJooqConfig') {
+    doLast {
+        def configFile = file("${projectDir}/src/main/resources/jooq-config.xml")
+        def content = configFile.text
+
+        content = content.replace("\${DB_URL}", System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5433/bank_account")
+                .replace("\${DB_USER}", System.getenv("DB_USER") ?: "postgres")
+                .replace("\${DB_PASSWORD}", System.getenv("DB_PASSWORD") ?: "postgres")
+                .replace("\${DB_SCHEMA}", System.getenv("DB_SCHEMA") ?: "public")
+
+        configFile.text = content
+    }
+}
+
+tasks.register('generateJooq', JavaExec) {
+    group = 'jooq'
+    description = 'Gera código do JOOQ a partir do banco de dados'
+
+    dependsOn generateJooqConfig
+
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.jooq.codegen.GenerationTool'
+
+    args = [file("${projectDir}/src/main/resources/jooq-config.xml").absolutePath]
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
